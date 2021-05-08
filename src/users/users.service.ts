@@ -26,4 +26,10 @@ export class UsersService {
     this.users.push(newUser);
     return newUser;
   }
+
+  deleteUser(userId: number): User {
+    const deletedUser = this.users.filter((user) => user.id === userId)[0];
+    this.users = this.users.filter((user) => user.id !== userId);
+    return deletedUser;
+  }
 }

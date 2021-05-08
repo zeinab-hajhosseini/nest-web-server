@@ -13,6 +13,7 @@ import {
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Delete } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -60,5 +61,15 @@ export class UsersController {
   @Post()
   createUser(@Body() body: CreateUserDto): User {
     return this.userService.createUser(body);
+  }
+
+  @ApiOkResponse({ type: User })
+  @ApiNotFoundResponse()
+  @Delete(':id')
+  deleteUser(@Param('id', ParseIntPipe) id: number): User {
+    const deletedUser = this.userService.deleteUser(id);
+    if (!deletedUser) throw new NotFoundException();
+
+    return deletedUser;
   }
 }
