@@ -6,6 +6,7 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Query,
 } from '@nestjs/common';
@@ -13,10 +14,12 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiQuery,
+  ApiResponseProperty,
   ApiTags,
 } from '@nestjs/swagger';
 
@@ -35,8 +38,8 @@ export class UsersController {
   @ApiOkResponse({ type: User })
   @ApiNotFoundResponse()
   @Get(':id')
-  getUserById(@Param('id') id: string): User {
-    const user = this.userService.findById(Number(id));
+  getUserById(@Param('id', ParseIntPipe) id: number): User {
+    const user = this.userService.findById(id);
 
     if (!user) {
       throw new HttpException(
@@ -44,7 +47,7 @@ export class UsersController {
           status: HttpStatus.NOT_FOUND,
           error: 'This user is not found',
         },
-        HttpStatus.NOT_FOUND
+        HttpStatus.NOT_FOUND,
       );
       //throw new NotFoundException();
     }
@@ -52,7 +55,8 @@ export class UsersController {
     return user;
   }
 
-  @ApiCreatedResponse({ type: User })
+  @ApiCreatedResponse({ type: User, description: 'Create Successfully' })
+  @ApiBadRequestResponse({ description: 'Request DTO Not validate' })
   @Post()
   createUser(@Body() body: CreateUserDto): User {
     return this.userService.createUser(body);

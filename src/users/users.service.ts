@@ -8,7 +8,7 @@ export class UsersService {
     { id: 0, name: 'zizoo' },
     { id: 1, name: 'zizoo' },
     { id: 2, name: 'zizoo' },
-    { id: 2, name: 'ali' }
+    { id: 3, name: 'ali' }
   ];
 
   findAll(name?: string): User[] {
