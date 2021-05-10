@@ -1,35 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [
-    { id: 0, name: 'zizoo' },
-    { id: 1, name: 'zizoo' },
-    { id: 2, name: 'zizoo' },
-    { id: 3, name: 'ali' }
-  ];
+  constructor(
+    @InjectRepository(User) private usersRepository: Repository<User>,
+  ) {}
 
-  findAll(name?: string): User[] {
-    if (name) return this.users.filter((user) => user.name == name);
+  findAll(name?: string): Promise<User[]> {
+    if (name) return this.usersRepository.find({ name });
 
-    return this.users;
+    return this.usersRepository.find();
   }
 
-  findById(userId: number): User {
-    return this.users.find((user) => user.id === userId);
+  async findById(userId: number): Promise<User> {
+    try {
+      const user: User = await this.usersRepository.findOneOrFail(userId);
+      return user;
+    } catch{
+      throw new NotFoundException();
+    }
   }
 
-  createUser(createUserDto: CreateUserDto): User {
-    const newUser: User = { id: Date.now(), ...createUserDto };
-    this.users.push(newUser);
-    return newUser;
+  createUser(createUserDto: CreateUserDto): Promise<User> {
+    const newUser: User = this.usersRepository.create({
+      name: createUserDto.name,
+    });
+
+    return this.usersRepository.save(newUser);
   }
 
-  deleteUser(userId: number): User {
-    const deletedUser = this.users.filter((user) => user.id === userId)[0];
-    this.users = this.users.filter((user) => user.id !== userId);
-    return deletedUser;
+  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
+    const updatedUser: User = await this.findById(updateUserDto.id);
+
+    updatedUser.name = updateUserDto.name;
+
+    return this.usersRepository.save(updatedUser);
+  }
+
+  async deleteUser(userId: number): Promise<User> {
+    const deletedUser: User = await this.findById(userId);
+
+    return this.usersRepository.remove(deletedUser);
   }
 }
