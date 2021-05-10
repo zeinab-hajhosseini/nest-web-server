@@ -29,7 +29,7 @@ import {
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(private readonly userService: UsersService) {}
 
   @ApiOkResponse({ type: User, isArray: true })
   @ApiQuery({ name: 'name', required: false })
@@ -61,15 +61,15 @@ export class UsersController {
   @ApiCreatedResponse({ type: User, description: 'Create Successfully' })
   @ApiBadRequestResponse({ description: 'Request DTO Not validate' })
   @Post()
-  createUser(@Body() body: CreateUserDto): Promise<User> {
+  create(@Body() body: CreateUserDto): Promise<User> {
     return this.userService.createUser(body);
   }
 
   @ApiOkResponse({ type: User })
   @ApiNotFoundResponse()
-  @Patch()
-  updateUser(@Body() body: UpdateUserDto): Promise<User> {
-    const updatedUser = this.userService.updateUser(body);
+  @Patch(':id')
+  updateUser(@Param('id', ParseIntPipe) id : number, @Body() body: UpdateUserDto): Promise<User> {
+    const updatedUser = this.userService.updateUser(id, body);
     
     if(!updatedUser) throw new NotFoundException();
 
